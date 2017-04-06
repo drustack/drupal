@@ -54,7 +54,7 @@ class NodeModerationHandler extends ModerationHandler {
     /* @var \Drupal\node\Entity\NodeType $entity */
     $entity = $form_state->getFormObject()->getEntity();
 
-    if ($this->moderationInfo->getWorkflowForEntity($entity)) {
+    if ($entity->getThirdPartySetting('content_moderation', 'workflow', '')) {
       // Force the revision checkbox on.
       $form['workflow']['options']['#default_value']['revision'] = 'revision';
       $form['workflow']['options']['revision']['#disabled'] = TRUE;

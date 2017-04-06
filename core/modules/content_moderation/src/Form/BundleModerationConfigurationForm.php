@@ -61,13 +61,7 @@ class BundleModerationConfigurationForm extends EntityForm {
       return $workflow->status() && $workflow->getTypePlugin() instanceof ContentModeration;
     }));
 
-    $selected_workflow = array_reduce($workflows, function ($carry, WorkflowInterface $workflow) use ($bundle_of_entity_type, $bundle) {
-      $plugin = $workflow->getTypePlugin();
-      if ($plugin instanceof ContentModeration && $plugin->appliesToEntityTypeAndBundle($bundle_of_entity_type->id(), $bundle->id())) {
-        return $workflow->id();
-      }
-      return $carry;
-    });
+    $selected_workflow = $bundle->getThirdPartySetting('content_moderation', 'workflow', '');
     $form['workflow'] = [
       '#type' => 'select',
       '#title' => $this->t('Select the workflow to apply'),
@@ -117,6 +111,8 @@ class BundleModerationConfigurationForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+    /* @var \Drupal\Core\Config\Entity\ConfigEntityInterface $bundle */
+    $bundle = $this->getEntity();
     $entity_type_id = $form_state->getValue('entity_type');
     $bundle_id = $form_state->getValue('bundle');
     $new_workflow_id = $form_state->getValue('workflow');
@@ -130,12 +126,16 @@ class BundleModerationConfigurationForm extends EntityForm {
       $workflow = $this->entityTypeManager->getStorage('workflow')->load($original_workflow_id);
       $workflow->getTypePlugin()->removeEntityTypeAndBundle($entity_type_id, $bundle_id);
       $workflow->save();
+      $bundle->unsetThirdPartySetting('content_moderation', 'workflow');
+      $bundle->save();
     }
     if ($new_workflow_id) {
       /* @var \Drupal\workflows\WorkflowInterface $workflow */
       $workflow = $this->entityTypeManager->getStorage('workflow')->load($new_workflow_id);
       $workflow->getTypePlugin()->addEntityTypeAndBundle($entity_type_id, $bundle_id);
       $workflow->save();
+      $bundle->setThirdPartySetting('content_moderation', 'workflow', $new_workflow_id);
+      $bundle->save();
     }
   }
 

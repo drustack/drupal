@@ -6,6 +6,22 @@ views.filter.latest_revision:
       type: string
       label: 'Value'
 
+node.type.*.third_party.content_moderation:
+  type: mapping
+  label: 'Enable moderation states for this node type'
+  mapping:
+    workflow:
+      type: string
+      label: 'Workflow'
+
+block_content.type.*.third_party.content_moderation:
+  type: mapping
+  label: 'Enable moderation states for this block content type'
+  mapping:
+    workflow:
+      type: string
+      label: 'Workflow'
+
 workflow.type_settings.content_moderation:
   type: mapping
   mapping:
